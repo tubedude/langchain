@@ -125,12 +125,41 @@ defmodule LangChain.Chains.LLMChain do
   @required_fields [:llm]
 
   @doc """
-  Start a new LLMChain configuration.
+    Creates a new `LLMChain` configuration.
 
-      {:ok, chain} = LLMChain.new(%{
-        llm: %ChatOpenAI{model: "gpt-3.5-turbo", stream: true},
-        messages: [%Message.new_system!("You are a helpful assistant.")]
-      })
+    Start a new LLMChain configuration. If the validation
+    succeeds, it returns `{:ok, chain}`. Otherwise, it returns `{:error, changeset}`.
+
+    ## Required Fields
+
+    - `:llm` (struct): The language model configuration. For available models, see
+      `LangChain.ChatModels`.
+
+    ## Optional Fields
+
+    - `:tools` (map): A map of tools to be used.
+    - `:custom_context` (map): A map of custom context values. For more details and examples,
+      refer to the documentation in `LangChain.Function`.
+    - `:max_retry_count` (integer): The maximum number of retries.
+    - `:callbacks` (list): A list of callback functions.
+    - `:verbose` (boolean): A flag to enable verbose logging.
+
+    ## Examples
+
+        iex> {:ok, chain} = LLMChain.new(%{
+        ...>   llm: %ChatOpenAI{model: "gpt-3.5-turbo", stream: true},
+        ...>   messages: [%Message.new_system!("You are a helpful assistant.")]
+        ...> })
+        {:ok, %LLMChain{...}}
+
+    ## Parameters
+
+    - `attrs`: A map of attributes to initialize the `LLMChain`.
+
+    ## Returns
+
+    - `{:ok, t()}`: If the `LLMChain` configuration is successfully created.
+    - `{:error, Ecto.Changeset.t()}`: If there is an error in the provided attributes.
   """
   @spec new(attrs :: map()) :: {:ok, t} | {:error, Ecto.Changeset.t()}
   def new(attrs \\ %{}) do
@@ -141,12 +170,22 @@ defmodule LangChain.Chains.LLMChain do
   end
 
   @doc """
-  Start a new LLMChain configuration and return it or raise an error if invalid.
+    Creates a new `LLMChain` configuration and raises an error if it is invalid.
 
-      chain = LLMChain.new!(%{
-        llm: %ChatOpenAI{model: "gpt-3.5-turbo", stream: true},
-        messages: [%Message.new_system!("You are a helpful assistant.")]
-      })
+    Similar to `new/1` but raises a `LangChain.LangChainError`
+    if the provided attributes are invalid.
+
+    ## Parameters
+
+    - `attrs`: A map of attributes to initialize the `LLMChain`.
+
+    ## Returns
+
+    - `t()`: The successfully created `LLMChain`.
+
+    ## Raises
+
+    - `LangChain.LangChainError`: If the provided attributes are invalid.
   """
   @spec new!(attrs :: map()) :: t() | no_return()
   def new!(attrs \\ %{}) do
@@ -159,6 +198,7 @@ defmodule LangChain.Chains.LLMChain do
     end
   end
 
+  @doc false
   def common_validation(changeset) do
     changeset
     |> validate_required(@required_fields)
@@ -180,7 +220,7 @@ defmodule LangChain.Chains.LLMChain do
   end
 
   @doc """
-  Add a tool to an LLMChain.
+  Add a tool to an LLMChain. See `LangChain.Function` for more information.
   """
   @spec add_tools(t(), Function.t() | [Function.t()]) :: t() | no_return()
   def add_tools(%LLMChain{tools: existing} = chain, tools) do
